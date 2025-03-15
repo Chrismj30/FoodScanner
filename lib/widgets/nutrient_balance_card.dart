@@ -15,40 +15,60 @@ class NutrientBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-            Colors.transparent,
+            Theme.of(context).colorScheme.secondary.withOpacity(0.15),
+            Theme.of(context).colorScheme.surfaceVariant,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
         border: Border.all(
           color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
-          width: 1,
+          width: 1.5,
         ),
       ),
       child: ExpansionTile(
         backgroundColor: Colors.transparent,
         collapsedBackgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        collapsedShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
         title: Row(
           children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: Theme.of(context).colorScheme.error,
-              size: 24,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.error.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.warning_amber_rounded,
+                color: Theme.of(context).colorScheme.error,
+                size: 24,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 issue,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
                 ),
               ),
@@ -57,30 +77,50 @@ class NutrientBalanceCard extends StatelessWidget {
         ),
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  explanation,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14,
-                    height: 1.5,
-                    fontFamily: 'Poppins',
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Text(
+                    explanation,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                      height: 1.5,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Recommendations:',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onBackground,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Poppins',
-                  ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline,
+                      color: Theme.of(context).colorScheme.tertiary,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Recommendations:',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 ...recommendations.map((rec) => _RecommendationItem(
                       food: rec['food'] ?? '',
                       quantity: rec['quantity'] ?? '',

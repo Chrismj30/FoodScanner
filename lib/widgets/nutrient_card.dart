@@ -16,16 +16,17 @@ Widget NutrientCard(BuildContext context, Map<String, dynamic> nutrient,
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white24,
+      color: Theme.of(context).colorScheme.surfaceVariant,
       borderRadius: BorderRadius.circular(20),
       border: Border.all(
-        color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+        color: logic.getColorForPercent(percent, context).withOpacity(0.2),
+        width: 1.5,
       ),
       boxShadow: [
         BoxShadow(
-          color: logic.getColorForPercent(percent, context).withOpacity(0.1),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
         ),
       ],
     ),
@@ -42,36 +43,44 @@ Widget NutrientCard(BuildContext context, Map<String, dynamic> nutrient,
                 name,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onTertiary,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontFamily: 'Poppins',
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Icon(
-              logic.getNutrientIcon(name),
-              color: logic.getColorForPercent(percent, context),
-              size: 20,
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: logic.getColorForPercent(percent, context).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                logic.getNutrientIcon(name),
+                color: logic.getColorForPercent(percent, context),
+                size: 20,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         // Progress Indicator
-        LinearProgressIndicator(
-          value: percent,
-          backgroundColor:
-              Theme.of(context).colorScheme.tertiary.withOpacity(0.1),
-          valueColor: AlwaysStoppedAnimation<Color>(
-              logic.getColorForPercent(percent, context)),
-          minHeight: 6,
-          borderRadius: BorderRadius.circular(3),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: percent,
+            backgroundColor: Theme.of(context).colorScheme.background.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(
+                logic.getColorForPercent(percent, context)),
+            minHeight: 8,
+          ),
         ),
 
         // Values
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -80,15 +89,22 @@ Widget NutrientCard(BuildContext context, Map<String, dynamic> nutrient,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            Text(
-              '${(percent * 100).toStringAsFixed(0)}%',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: logic.getColorForPercent(percent, context),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: logic.getColorForPercent(percent, context).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${(percent * 100).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: logic.getColorForPercent(percent, context),
+                ),
               ),
             ),
           ],
@@ -97,3 +113,4 @@ Widget NutrientCard(BuildContext context, Map<String, dynamic> nutrient,
     ),
   );
 }
+

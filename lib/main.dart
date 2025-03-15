@@ -22,14 +22,14 @@ Future<void> main() async {
 }
 
 extension CustomColors on ColorScheme {
-  Color get accent => const Color(0xFF61DAFB);
-  Color get neutral => const Color(0xFF808080);
-  Color get success => const Color(0xFF4CAF50);
-  Color get warning => const Color(0xFFFFA726);
-  Color get info => const Color(0xFF29B6F6);
+  Color get accent => const Color(0xFF00E676);
+  Color get neutral => const Color(0xFF9E9E9E);
+  Color get success => const Color(0xFF00C853);
+  Color get warning => const Color(0xFFFFAB40);
+  Color get info => const Color(0xFF40C4FF);
   Color get background => const Color(0xFF121212);
-  Color get cardBackground => const Color(0xFF1E1E1E);
-  Color get divider => const Color(0xFF2D2D2D);
+  Color get cardBackground => const Color(0xFF1D1D1D);
+  Color get divider => const Color(0xFF323232);
 }
 
 class MyApp extends StatelessWidget {
@@ -44,27 +44,41 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4E7BFF),
-          brightness: Brightness.light,
+          seedColor: const Color(0xFF00BFA5),
+          brightness: Brightness.dark,
           surface: const Color(0xFF121212),
-          primary: const Color(0xFF4E7BFF),
-          secondary: const Color(0xFF9C72FF),
-          tertiary: const Color.fromARGB(
-              255, 220, 109, 190), // Changed to a bright green color
-          error: const Color(0xFFFF5C5C),
+          primary: const Color(0xFF00BFA5),
+          secondary: const Color(0xFFFF6E40),
+          tertiary: const Color(0xFFFFD54F),
+          error: const Color(0xFFFF5252),
           onSurface: Colors.white,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onError: Colors.white,
+          background: const Color(0xFF121212),
+          onBackground: Colors.white,
+          surfaceVariant: const Color(0xFF1D1D1D),
+          onSurfaceVariant: const Color(0xFFE0E0E0),
         ),
         textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
-          titleLarge: TextStyle(color: Colors.white),
-          titleMedium: TextStyle(color: Colors.white),
-          titleSmall: TextStyle(color: Colors.white),
-          labelLarge: TextStyle(color: Colors.black),
-          labelMedium: TextStyle(color: Colors.black),
+          bodyLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
+          bodyMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
+          titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          titleMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          titleSmall: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          labelLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          labelMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
+        ),
+        cardTheme: CardTheme(
+          color: const Color(0xFF1D1D1D),
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ),
       home: const MyHomePage(),

@@ -20,15 +20,15 @@ class FoodItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.cardBackground,
-        borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -38,7 +38,20 @@ class FoodItemCard extends StatelessWidget {
         children: [
           // Header
           Container(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -60,26 +73,40 @@ class FoodItemCard extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primary,
                           borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
                           '${item.quantity}${item.unit}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.edit,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.primary,
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        onPressed: () => _showEditDialog(context),
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.edit,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: () => _showEditDialog(context),
+                        ),
                       ),
                     ],
                   ),
@@ -87,15 +114,15 @@ class FoodItemCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           // Nutrient grid
           GridView.count(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
             childAspectRatio: 3.0,
             children: [
               FoodNutrientTile(
@@ -219,3 +246,4 @@ class FoodItemCard extends StatelessWidget {
     );
   }
 }
+
