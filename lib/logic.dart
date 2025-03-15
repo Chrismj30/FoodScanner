@@ -8,6 +8,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart'; // Add this import
 import 'package:read_the_label/models/food_item.dart';
+import 'package:read_the_label/services/firebase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/dv_values.dart';
@@ -40,6 +41,10 @@ class Logic {
   final ValueNotifier<bool> loadingNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<String> mealNameNotifier = ValueNotifier<String>("");
   final dailyIntakeNotifier = ValueNotifier<Map<String, double>>({});
+  
+  // Firebase service
+  final FirebaseService _firebaseService = FirebaseService();
+  bool get isUserLoggedIn => _firebaseService.isUserLoggedIn;
 
   // String _mealName = "";
   // String get mealName => _mealName;
@@ -108,35 +113,44 @@ class Logic {
     try {
       print("✅Start of saveDailyIntake()");
       print("⚡Daily intake at the start of saveDailyIntake(): $dailyIntake");
-      final prefs = await SharedPreferences.getInstance();
+      
       final today = DateTime.now();
-      final storageKey = getStorageKey(today);
+      
+      // Try to save to Firebase first if user is logged in
+      if (isUserLoggedIn) {
+        await _firebaseService.saveDailyIntake(today, dailyIntake);
+      } else {
+        // Fallback to SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        final storageKey = getStorageKey(today);
 
-      // Get existing data first
-      final existingData = prefs.getString(storageKey);
-      Map<String, double> updatedIntake = {};
+        // Get existing data first
+        final existingData = prefs.getString(storageKey);
+        Map<String, double> updatedIntake = {};
 
-      if (existingData != null) {
-        final decoded = jsonDecode(existingData) as Map<String, dynamic>;
-        decoded.forEach((key, value) {
-          updatedIntake[key] = (value as num).toDouble();
+        if (existingData != null) {
+          final decoded = jsonDecode(existingData) as Map<String, dynamic>;
+          decoded.forEach((key, value) {
+            updatedIntake[key] = (value as num).toDouble();
+          });
+        }
+
+        // Merge existing data with new data
+        dailyIntake.forEach((key, value) {
+          updatedIntake[key] = (updatedIntake[key] ?? 0.0) + value;
         });
+
+        print("Saving daily intake with key: $storageKey");
+        print("Data being saved: $updatedIntake");
+
+        await prefs.setString(storageKey, jsonEncode(updatedIntake));
+        dailyIntake = updatedIntake; // Update the current dailyIntake
+
+        // Verify the save
+        final savedData = prefs.getString(storageKey);
+        print("Verification - Saved data: $savedData");
       }
-
-      // Merge existing data with new data
-      dailyIntake.forEach((key, value) {
-        updatedIntake[key] = (updatedIntake[key] ?? 0.0) + value;
-      });
-
-      print("Saving daily intake with key: $storageKey");
-      print("Data being saved: $updatedIntake");
-
-      await prefs.setString(storageKey, jsonEncode(updatedIntake));
-      dailyIntake = updatedIntake; // Update the current dailyIntake
-
-      // Verify the save
-      final savedData = prefs.getString(storageKey);
-      print("Verification - Saved data: $savedData");
+      
       print("⚡Daily intake at the end of saveDailyIntake(): $dailyIntake");
       print("✅End of saveDailyIntake()");
     } catch (e) {
@@ -181,6 +195,23 @@ class Logic {
     print("✅Start of loadFoodHistory()");
     print("⚡Daily intake: $dailyIntake");
     print("Loading food history from storage...");
+    
+    // Try to load from Firebase first if user is logged in
+    if (isUserLoggedIn) {
+      try {
+        _foodHistory = await _firebaseService.loadFoodHistory();
+        print("Successfully loaded ${_foodHistory.length} food items from Firebase");
+        _foodHistory.forEach((item) {
+          print("Loaded item: ${item.foodName} on ${item.dateTime}");
+        });
+        return;
+      } catch (e) {
+        print("Error loading food history from Firebase: $e");
+        // Fall back to SharedPreferences if Firebase fails
+      }
+    }
+    
+    // Fallback to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final String? storedHistory = prefs.getString('food_history');
 
@@ -214,21 +245,94 @@ class Logic {
     try {
       print("✅Start of _saveFoodHistory()");
       print("⚡Daily intake at start of _saveFoodHistory(): $dailyIntake");
-      final prefs = await SharedPreferences.getInstance();
-      final historyJson = _foodHistory.map((item) => item.toJson()).toList();
-      print("Saving food history with ${historyJson.length} items");
+      
+      // Try to save to Firebase first if user is logged in
+      if (isUserLoggedIn) {
+        await _firebaseService.saveFoodHistory(_foodHistory);
+        print("Food history saved to Firebase");
+      } else {
+        // Fallback to SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        final historyJson = _foodHistory.map((item) => item.toJson()).toList();
+        print("Saving food history with ${historyJson.length} items");
 
-      await prefs.setString('food_history', jsonEncode(historyJson));
+        await prefs.setString('food_history', jsonEncode(historyJson));
 
-      // Verify the save
-      final savedData = prefs.getString('food_history');
-      final decodedSave =
-          savedData != null ? jsonDecode(savedData) as List : [];
-      print("Verification - Saved food history items: ${decodedSave.length}");
+        // Verify the save
+        final savedData = prefs.getString('food_history');
+        final decodedSave =
+            savedData != null ? jsonDecode(savedData) as List : [];
+        print("Verification - Saved food history items: ${decodedSave.length}");
+      }
+      
       print("⚡Daily intake at end of _saveFoodHIistory(): $dailyIntake");
       print("✅End of _saveFoodHistory()");
     } catch (e) {
       print("Error saving food history: $e");
+    }
+  }
+
+  // Method to upload image to Firebase Storage
+  Future<String> uploadImageToCloud(dynamic imageFile) async {
+    if (!isUserLoggedIn) return '';
+    
+    try {
+      return await _firebaseService.uploadImage(imageFile, 'food_images');
+    } catch (e) {
+      print("Error uploading image to cloud: $e");
+      return '';
+    }
+  }
+
+  // Method to sign in anonymously
+  Future<bool> signInAnonymously() async {
+    try {
+      final result = await _firebaseService.signInAnonymously();
+      return result != null;
+    } catch (e) {
+      print("Error signing in anonymously: $e");
+      return false;
+    }
+  }
+
+  // Method to sign in with email and password
+  Future<bool> signInWithEmailAndPassword(String email, String password) async {
+    try {
+      final result = await _firebaseService.signInWithEmailAndPassword(email, password);
+      return result != null;
+    } catch (e) {
+      print("Error signing in with email and password: $e");
+      return false;
+    }
+  }
+
+  // Method to create a new user
+  Future<bool> createUserWithEmailAndPassword(String email, String password) async {
+    try {
+      final result = await _firebaseService.createUserWithEmailAndPassword(email, password);
+      return result != null;
+    } catch (e) {
+      print("Error creating user with email and password: $e");
+      return false;
+    }
+  }
+
+  // Method to sign out
+  Future<void> signOut() async {
+    try {
+      await _firebaseService.signOut();
+    } catch (e) {
+      print("Error signing out: $e");
+    }
+  }
+
+  // Method to reset password
+  Future<void> resetPassword(String email) async {
+    try {
+      await _firebaseService.resetPassword(email);
+    } catch (e) {
+      print("Error resetting password: $e");
+      throw e; // Rethrow to handle in UI
     }
   }
 
@@ -242,6 +346,7 @@ class Logic {
 
     Map<String, double> newNutrients = {};
     dynamic imageFile;
+    String cloudImageUrl = '';
 
     if (source == 'label' && parsedNutrients.isNotEmpty) {
       for (var nutrient in parsedNutrients) {
@@ -264,34 +369,15 @@ class Logic {
       imageFile = foodImage;
     }
 
-    // Save the image to the device storage
-    String imagePath = '';
-    if (imageFile != null) {
-      if (!kIsWeb) {
-        // File operations only work on mobile platforms
-        final directory = await getApplicationDocumentsDirectory();
-        final imageName = '${DateTime.now().millisecondsSinceEpoch}.png';
-        
-        // Make sure imageFile is a File before using copy method
-        if (imageFile is File) {
-          final savedImage = await imageFile.copy('${directory.path}/$imageName');
-          imagePath = savedImage.path;
-        } else {
-          debugPrint('Warning: imageFile is not a File object on mobile platform');
-          imagePath = 'unknown_image_${DateTime.now().millisecondsSinceEpoch}';
-        }
-      } else {
-        // For web, we can't save files to local storage in the same way
-        // We could use browser storage APIs if needed, but for now just skip this step
-        imagePath = 'web_image_${DateTime.now().millisecondsSinceEpoch}';
-        debugPrint('Skipping file save operation on web platform');
-      }
+    // Upload image to Firebase Storage if user is logged in
+    if (isUserLoggedIn && imageFile != null) {
+      cloudImageUrl = await uploadImageToCloud(imageFile);
     }
 
-    // Update dailyIntake with new nutrients
-    newNutrients.forEach((key, value) {
-      dailyIntake[key] = (dailyIntake[key] ?? 0.0) + value;
-    });
+    // Use local image path if cloud upload failed or user is not logged in
+    final imagePath = cloudImageUrl.isNotEmpty 
+        ? cloudImageUrl 
+        : (kIsWeb ? 'web_image_${DateTime.now().millisecondsSinceEpoch}' : '');
 
     await addToFoodHistory(
       foodName: source == 'label' ? _productName : mealName,

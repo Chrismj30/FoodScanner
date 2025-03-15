@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1018454074805",
+    "project_id": "foodeye-1030a",
+    "storage_bucket": "foodeye-1030a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018454074805:android:664e8ed4b552fb1b0da5fc",
+        "android_client_info": {
+          "package_name": "com.chris.foodscanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1UgaZP--7MDYhsarIaBA3bUZiLayopOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

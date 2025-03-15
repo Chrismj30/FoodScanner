@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:read_the_label/logic.dart';
+import 'package:read_the_label/screens/login_screen.dart';
+import 'package:read_the_label/services/firebase_service.dart';
 
 import 'my_home_page.dart';
 
@@ -13,11 +16,17 @@ Future<void> main() async {
   ));
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
       overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+  
+  // Initialize Firebase
+  await FirebaseService.initializeFirebase();
+  
+  // Load environment variables
   if (kIsWeb) {
     dotenv.testLoad(fileInput: 'GEMINI_API_KEY=AIzaSyA91Qu8C8xDq_cpr0zYIhT00UMlUWXD0Lc');
   } else {
     await dotenv.load(fileName: ".env");
   }
+  
   runApp(const MyApp());
 }
 
@@ -32,10 +41,36 @@ extension CustomColors on ColorScheme {
   Color get divider => const Color(0xFF323232);
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final Logic _logic = Logic();
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if user is already logged in
+    _isLoggedIn = _logic.isUserLoggedIn;
+  }
+
+  void _onLoginSuccess() {
+    setState(() {
+      _isLoggedIn = true;
+    });
+  }
+  
+  void _onLogout() {
+    setState(() {
+      _isLoggedIn = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -81,7 +116,12 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MyHomePage(),
+      home: _isLoggedIn
+          ? MyHomePage(onLogout: _onLogout)
+          : LoginScreen(
+              logic: _logic,
+              onLoginSuccess: _onLoginSuccess,
+            ),
     );
   }
 }

@@ -32,7 +32,9 @@ import 'package:read_the_label/logic.dart';
 import 'widgets/portion_buttons.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final Function? onLogout;
+  
+  const MyHomePage({super.key, this.onLogout});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -172,6 +174,13 @@ class _MyHomePageState extends State<MyHomePage> {
               fontFamily: 'Poppins',
               fontWeight: FontWeight.w500),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Theme.of(context).colorScheme.error),
+            onPressed: _handleLogout,
+            tooltip: 'Logout',
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         color: Theme.of(context).colorScheme.cardBackground,
@@ -213,40 +222,44 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        color: Theme.of(context).colorScheme.surface,
-        child: AnimatedSwitcher(
-          duration: _duration,
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: IndexedStack(
-            key: ValueKey<int>(_currentIndex),
-            index: _currentIndex,
-            children: [
-              AnimatedOpacity(
-                  opacity: _currentIndex == 0 ? 1.0 : 0.0,
-                  duration: _duration,
-                  child: _buildHomePage(context)),
-              AnimatedOpacity(
-                opacity: _currentIndex == 1 ? 1.0 : 0.0,
-                duration: _duration,
-                child: FoodScanPage(logic: _logic),
+      body: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height,
+            color: Theme.of(context).colorScheme.surface,
+            child: AnimatedSwitcher(
+              duration: _duration,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+              child: IndexedStack(
+                key: ValueKey<int>(_currentIndex),
+                index: _currentIndex,
+                children: [
+                  AnimatedOpacity(
+                      opacity: _currentIndex == 0 ? 1.0 : 0.0,
+                      duration: _duration,
+                      child: _buildHomePage(context)),
+                  AnimatedOpacity(
+                    opacity: _currentIndex == 1 ? 1.0 : 0.0,
+                    duration: _duration,
+                    child: FoodScanPage(logic: _logic),
+                  ),
+                  AnimatedOpacity(
+                    opacity: _currentIndex == 2 ? 1.0 : 0.0,
+                    duration: _duration,
+                    child: DailyIntakePage(
+                      dailyIntake: _logic.dailyIntake,
+                    ),
+                  ),
+                ],
               ),
-              AnimatedOpacity(
-                opacity: _currentIndex == 2 ? 1.0 : 0.0,
-                duration: _duration,
-                child: DailyIntakePage(
-                  dailyIntake: _logic.dailyIntake,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -860,6 +873,36 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  // Add a method to handle logout
+  void _handleLogout() async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        content: Text('Are you sure you want to logout?', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Logout', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (shouldLogout) {
+      await _logic.signOut();
+      if (widget.onLogout != null) {
+        widget.onLogout!();
+      }
+    }
   }
 }
 
